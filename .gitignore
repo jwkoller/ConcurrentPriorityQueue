@@ -1,0 +1,14 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/obj/Debug/net8.0
+/obj
+/bin/Debug
+/bin/Release
+/ConcurrentPriorityQueue/obj
+/ConcurrentPriorityQueue.Tests/bin/Release/net8.0
+/ConcurrentPriorityQueue.Tests/obj
+/ConcurrentPriorityQueue/bin/Release/net8.0
+/ConcurrentPriorityQueue/bin/Release
