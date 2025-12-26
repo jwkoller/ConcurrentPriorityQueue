@@ -5,15 +5,26 @@ Includes an option to define a delegate that extracts element priority based on 
 
 ### Examples
 
+- Create a queue of strings prioritized by shortest first
 ```csharp
-// Create a queue of strings prioritized by shortest first.
 var queue = new ConcurrentPriorityQueue<string, int>((element) => element.Length);
 await queue.Enqueue("three");
 await queue.Enqueue("four");
 string next = await queue.Dequeue();
+
 // next will equal "four"
 ```
 
+- Create a queue of strings prioritized by longest first using a custom comparer
+```csharp
+var queue = new ConcurrentPriorityQueue<string, int>((element) => element.Length, Comparer<int>.Create((x,y) => y.CompareTo(x)));
+await queue.Enqueue("two");
+await queue.Enqueue("three");
+await queue.Enqueue("four");
+string next = await queue.Dequeue();
+
+// next will equal "three"
+```
 
 ## Additional documentation
 
