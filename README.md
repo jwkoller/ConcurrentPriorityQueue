@@ -3,6 +3,8 @@
 An predominantly asynchronous, thread safe Priority Queue utilizing **SemaphoreSlim** and WaitAsync as the locking mechanism.
 Includes an option to define a delegate that extracts element priority based on element value.
 
+TryPeek and TryDequeue are synchronous operations by necessity but remain thread safe.
+
 ### Examples
 
 - Create a queue of strings prioritized by shortest first
