@@ -10,3 +10,5 @@
 /ConcurrentPriorityQueue/obj
 /ConcurrentPriorityQueue.Tests/bin/Release/net8.0
 /ConcurrentPriorityQueue.Tests/obj
+/ConcurrentPriorityQueue/bin/Release/net8.0
+/ConcurrentPriorityQueue/bin/Release
