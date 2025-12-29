@@ -9,9 +9,9 @@ namespace ConcurrentPriorityQueue.Tests
         public async Task ItemsDequeuedInOrderByPriorityEvaluator()
         {
             var queue = new ConcurrentPriorityQueue<string, int>((element) => element.Length);
-            await queue.Enqueue("three");
-            await queue.Enqueue("four");
-            string next = await queue.Dequeue();
+            await queue.EnqueueAsync("three");
+            await queue.EnqueueAsync("four");
+            string next = await queue.DequeueAsync();
 
             Assert.AreEqual("four", next);
         }
@@ -20,9 +20,9 @@ namespace ConcurrentPriorityQueue.Tests
         public async Task ItemsDequeuedInOrderbyPriorityEvaluatorAndCustomComparer()
         {
             var queue = new ConcurrentPriorityQueue<string, int>((element) => element.Length, Comparer<int>.Create((x,y) => y.CompareTo(x)));
-            await queue.Enqueue("three");
-            await queue.Enqueue("four");
-            string next = await queue.Dequeue();
+            await queue.EnqueueAsync("three");
+            await queue.EnqueueAsync("four");
+            string next = await queue.DequeueAsync();
 
             Assert.AreEqual("three", next);
         }
@@ -31,11 +31,11 @@ namespace ConcurrentPriorityQueue.Tests
         public async Task ItemsWithSamePriorityAreDequeuedFirstInFirstOut()
         {
             var queue = new ConcurrentPriorityQueue<string, int>();
-            await queue.Enqueue("less important string", 2);
-            await queue.Enqueue("first important string", 1);
-            await queue.Enqueue("second important string", 1);
+            await queue.EnqueueAsync("less important string", 2);
+            await queue.EnqueueAsync("first important string", 1);
+            await queue.EnqueueAsync("second important string", 1);
 
-            string next = await queue.Dequeue();
+            string next = await queue.DequeueAsync();
 
             Assert.AreEqual("first important string", next);
         }
@@ -54,17 +54,17 @@ namespace ConcurrentPriorityQueue.Tests
                     int priority = new Random().Next(100);
                     string threadId = Guid.NewGuid().ToString();
 
-                    await queue.Enqueue($"Thread {threadId}", priority);
+                    await queue.EnqueueAsync($"Thread {threadId}", priority);
 
                 }));
             }
 
             await Task.WhenAll(threads);
 
-            int numberQueued = await queue.Count();
+            int numberQueued = await queue.CountAsync();
             Assert.AreEqual(numThreads, numberQueued);
 
-            var items = await queue.UnorderedItems();
+            var items = await queue.UnorderedItemsAsync();
             int distinctCount = items.Select(x => x.Item1).Distinct().Count();
             Assert.AreEqual(numThreads, distinctCount);
         }
