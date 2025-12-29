@@ -55,9 +55,11 @@ namespace ConcurrentPriorityQueue
         /// 
         /// </summary>
         /// <returns>A collection of the elements and their associated priority for the current queue.</returns>
-        public async Task<IReadOnlyCollection<(TElement, TPriority)>> UnorderedItemsAsync()
+        public async Task<IReadOnlyCollection<(TElement, TPriority)>> UnorderedItemsAsync(CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             var items = _priorityQueue.UnorderedItems;
             _lock.Release();
             
@@ -82,12 +84,13 @@ namespace ConcurrentPriorityQueue
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public async Task EnqueueAsync(TElement element)
+        public async Task EnqueueAsync(TElement element, CancellationToken token = default)
         {
+            token.ThrowIfCancellationRequested();
             ArgumentNullException.ThrowIfNull(_priorityEvaluator, "Priority Evaluator");
 
             TPriority priority = _priorityEvaluator(element);
-            await _lock.WaitAsync();
+            await _lock.WaitAsync(token);
             _priorityQueue.Enqueue(element, priority);
             _lock.Release();
         }
@@ -113,9 +116,11 @@ namespace ConcurrentPriorityQueue
         /// <param name="element"></param>
         /// <param name="priority"></param>
         /// <returns></returns>
-        public async Task EnqueueAsync(TElement element, TPriority priority)
+        public async Task EnqueueAsync(TElement element, TPriority priority, CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             _priorityQueue.Enqueue(element, priority);
             _lock.Release();
         }
@@ -138,11 +143,12 @@ namespace ConcurrentPriorityQueue
         /// </summary>
         /// <param name="elements"></param>
         /// <returns></returns>
-        public async Task EnqueueRangeAsync(IEnumerable<TElement> elements)
+        public async Task EnqueueRangeAsync(IEnumerable<TElement> elements, CancellationToken token = default)
         {
+            token.ThrowIfCancellationRequested();
             ArgumentNullException.ThrowIfNull(_priorityEvaluator,"Priority Evaluator");
 
-            await _lock.WaitAsync();
+            await _lock.WaitAsync(token);
             foreach (var item in elements)
             {
                 TPriority priority = _priorityEvaluator(item);
@@ -174,9 +180,11 @@ namespace ConcurrentPriorityQueue
         /// </summary>
         /// <param name="elements"></param>
         /// <returns></returns>
-        public async Task EnqueueRangeAsync(IEnumerable<Tuple<TElement, TPriority>> elements)
+        public async Task EnqueueRangeAsync(IEnumerable<Tuple<TElement, TPriority>> elements, CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             foreach(var item in elements)
             {
                 _priorityQueue.Enqueue(item.Item1, item.Item2);
@@ -203,9 +211,11 @@ namespace ConcurrentPriorityQueue
         /// Removes and returns the next element defined as the highest priority item.
         /// </summary>
         /// <returns></returns>
-        public async Task<TElement> DequeueAsync()
+        public async Task<TElement> DequeueAsync(CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             TElement element = _priorityQueue.Dequeue();
             _lock.Release();
 
@@ -244,9 +254,11 @@ namespace ConcurrentPriorityQueue
         /// Returns the next element defined as the highest priority without removing it from the queue.
         /// </summary>
         /// <returns></returns>
-        public async Task<TElement> PeekAsync()
+        public async Task<TElement> PeekAsync(CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             TElement element = _priorityQueue.Peek();
             _lock.Release();
 
@@ -285,9 +297,11 @@ namespace ConcurrentPriorityQueue
         /// Removes all items from the queue.
         /// </summary>
         /// <returns></returns>
-        public async Task ClearAsync()
+        public async Task ClearAsync(CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             _priorityQueue.Clear();
             _lock.Release();
         }
@@ -307,9 +321,11 @@ namespace ConcurrentPriorityQueue
         /// 
         /// </summary>
         /// <returns>The number of elements currently in the queue.</returns>
-        public async Task<int> CountAsync()
+        public async Task<int> CountAsync(CancellationToken token = default)
         {
-            await _lock.WaitAsync();
+            token.ThrowIfCancellationRequested();
+
+            await _lock.WaitAsync(token);
             int count = _priorityQueue.Count;
             _lock.Release();
 
