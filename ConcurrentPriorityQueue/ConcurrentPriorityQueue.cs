@@ -55,7 +55,7 @@ namespace ConcurrentPriorityQueue
         /// 
         /// </summary>
         /// <returns>A collection of the elements and their associated priority for the current queue.</returns>
-        public async Task<IReadOnlyCollection<(TElement, TPriority)>> UnorderedItems()
+        public async Task<IReadOnlyCollection<(TElement, TPriority)>> UnorderedItemsAsync()
         {
             await _lock.WaitAsync();
             var items = _priorityQueue.UnorderedItems;
@@ -65,15 +65,56 @@ namespace ConcurrentPriorityQueue
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>A collection of the elements and their associated priority for the current queue.</returns>
+        public IReadOnlyCollection<(TElement, TPriority)> UnorderedItems()
+        {
+            _lock.Wait();
+            var items = _priorityQueue.UnorderedItems;
+            _lock.Release();
+
+            return items;
+        }
+
+        /// <summary>
         /// Enqueues an element with a priority defined by the default evaluator.
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public async Task Enqueue(TElement element)
+        public async Task EnqueueAsync(TElement element)
         {
             ArgumentNullException.ThrowIfNull(_priorityEvaluator, "Priority Evaluator");
 
             TPriority priority = _priorityEvaluator(element);
+            await _lock.WaitAsync();
+            _priorityQueue.Enqueue(element, priority);
+            _lock.Release();
+        }
+
+        /// <summary>
+        /// Enqueues an element with a priority defined by the default evaluator.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public void Enqueue(TElement element)
+        {
+            ArgumentNullException.ThrowIfNull(_priorityEvaluator, "Priority Evaluator");
+
+            TPriority priority = _priorityEvaluator(element);
+            _lock.Wait();
+            _priorityQueue.Enqueue(element, priority);
+            _lock.Release();
+        }
+
+        /// <summary>
+        /// Enqueues an element with the specified priority.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="priority"></param>
+        /// <returns></returns>
+        public async Task EnqueueAsync(TElement element, TPriority priority)
+        {
             await _lock.WaitAsync();
             _priorityQueue.Enqueue(element, priority);
             _lock.Release();
@@ -85,9 +126,9 @@ namespace ConcurrentPriorityQueue
         /// <param name="element"></param>
         /// <param name="priority"></param>
         /// <returns></returns>
-        public async Task Enqueue(TElement element, TPriority priority)
+        public void Enqueue(TElement element, TPriority priority)
         {
-            await _lock.WaitAsync();
+            _lock.Wait();
             _priorityQueue.Enqueue(element, priority);
             _lock.Release();
         }
@@ -97,7 +138,7 @@ namespace ConcurrentPriorityQueue
         /// </summary>
         /// <param name="elements"></param>
         /// <returns></returns>
-        public async Task EnqueueRange(IEnumerable<TElement> elements)
+        public async Task EnqueueRangeAsync(IEnumerable<TElement> elements)
         {
             ArgumentNullException.ThrowIfNull(_priorityEvaluator,"Priority Evaluator");
 
@@ -111,11 +152,29 @@ namespace ConcurrentPriorityQueue
         }
 
         /// <summary>
+        /// Enqueues the elements with each priority defined by the default evaluator.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns></returns>
+        public void EnqueueRange(IEnumerable<TElement> elements)
+        {
+            ArgumentNullException.ThrowIfNull(_priorityEvaluator, "Priority Evaluator");
+
+            _lock.Wait();
+            foreach (var item in elements)
+            {
+                TPriority priority = _priorityEvaluator(item);
+                _priorityQueue.Enqueue(item, priority);
+            }
+            _lock.Release();
+        }
+
+        /// <summary>
         /// Enqueues the elements with with each specified priority.
         /// </summary>
         /// <param name="elements"></param>
         /// <returns></returns>
-        public async Task EnqueueRange(IEnumerable<Tuple<TElement, TPriority>> elements)
+        public async Task EnqueueRangeAsync(IEnumerable<Tuple<TElement, TPriority>> elements)
         {
             await _lock.WaitAsync();
             foreach(var item in elements)
@@ -126,12 +185,40 @@ namespace ConcurrentPriorityQueue
         }
 
         /// <summary>
+        /// Enqueues the elements with with each specified priority.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns></returns>
+        public void EnqueueRange(IEnumerable<Tuple<TElement, TPriority>> elements)
+        {
+            _lock.Wait();
+            foreach (var item in elements)
+            {
+                _priorityQueue.Enqueue(item.Item1, item.Item2);
+            }
+            _lock.Release();
+        }
+
+        /// <summary>
         /// Removes and returns the next element defined as the highest priority item.
         /// </summary>
         /// <returns></returns>
-        public async Task<TElement> Dequeue()
+        public async Task<TElement> DequeueAsync()
         {
             await _lock.WaitAsync();
+            TElement element = _priorityQueue.Dequeue();
+            _lock.Release();
+
+            return element;
+        }
+
+        /// <summary>
+        /// Removes and returns the next element defined as the highest priority item.
+        /// </summary>
+        /// <returns></returns>
+        public TElement Dequeue()
+        {
+            _lock.Wait();
             TElement element = _priorityQueue.Dequeue();
             _lock.Release();
 
@@ -157,9 +244,22 @@ namespace ConcurrentPriorityQueue
         /// Returns the next element defined as the highest priority without removing it from the queue.
         /// </summary>
         /// <returns></returns>
-        public async Task<TElement> Peek()
+        public async Task<TElement> PeekAsync()
         {
             await _lock.WaitAsync();
+            TElement element = _priorityQueue.Peek();
+            _lock.Release();
+
+            return element;
+        }
+
+        /// <summary>
+        /// Returns the next element defined as the highest priority without removing it from the queue.
+        /// </summary>
+        /// <returns></returns>
+        public TElement Peek()
+        {
+            _lock.Wait();
             TElement element = _priorityQueue.Peek();
             _lock.Release();
 
@@ -185,9 +285,20 @@ namespace ConcurrentPriorityQueue
         /// Removes all items from the queue.
         /// </summary>
         /// <returns></returns>
-        public async Task Clear()
+        public async Task ClearAsync()
         {
             await _lock.WaitAsync();
+            _priorityQueue.Clear();
+            _lock.Release();
+        }
+
+        /// <summary>
+        /// Removes all items from the queue.
+        /// </summary>
+        /// <returns></returns>
+        public void Clear()
+        {
+            _lock.Wait();
             _priorityQueue.Clear();
             _lock.Release();
         }
@@ -196,9 +307,22 @@ namespace ConcurrentPriorityQueue
         /// 
         /// </summary>
         /// <returns>The number of elements currently in the queue.</returns>
-        public async Task<int> Count()
+        public async Task<int> CountAsync()
         {
             await _lock.WaitAsync();
+            int count = _priorityQueue.Count;
+            _lock.Release();
+
+            return count;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>The number of elements currently in the queue.</returns>
+        public int Count()
+        {
+            _lock.Wait();
             int count = _priorityQueue.Count;
             _lock.Release();
 
