@@ -1,18 +1,16 @@
 # ConcurrentPriorityQueue
 
-An predominantly asynchronous, thread safe Priority Queue utilizing **SemaphoreSlim** and WaitAsync as the locking mechanism.
-Includes an option to define a delegate that extracts element priority based on element value.
-
-TryPeek and TryDequeue are synchronous operations by necessity but remain thread safe.
+A thread safe Priority Queue utilizing **SemaphoreSlim** as the locking mechanism with addtional asynchronous queue
+management functions. Includes constructor options to define a delegate that extracts element priority based on element value.
 
 ### Examples
 
 - Create a queue of strings prioritized by shortest first
 ```csharp
 var queue = new ConcurrentPriorityQueue<string, int>((element) => element.Length);
-await queue.Enqueue("three");
-await queue.Enqueue("four");
-string next = await queue.Dequeue();
+await queue.EnqueueAsync("three");
+await queue.EnqueueAsync("four");
+string next = await queue.DequeueAsync();
 
 // next will equal "four"
 ```
@@ -20,10 +18,10 @@ string next = await queue.Dequeue();
 - Create a queue of strings prioritized by longest first using a custom comparer
 ```csharp
 var queue = new ConcurrentPriorityQueue<string, int>((element) => element.Length, Comparer<int>.Create((x,y) => y.CompareTo(x)));
-await queue.Enqueue("two");
-await queue.Enqueue("three");
-await queue.Enqueue("four");
-string next = await queue.Dequeue();
+await queue.EnqueueAsync("two");
+await queue.EnqueueAsync("three");
+await queue.EnqueueAsync("four");
+string next = await queue.DequeueAsync();
 
 // next will equal "three"
 ```
